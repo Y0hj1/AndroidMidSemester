@@ -10,6 +10,7 @@ import io.github.dekabrsky.androidMidSemester.domain.usecase.SaveFiltersUseCase
 import io.github.dekabrsky.androidMidSemester.domain.usecase.SetMatchFavoriteUseCase
 import io.github.dekabrsky.androidMidSemester.presentation.details.MatchDetailsViewModel
 import io.github.dekabrsky.androidMidSemester.presentation.favorites.FavoritesViewModel
+import io.github.dekabrsky.androidMidSemester.presentation.filters.FiltersBadgeCache
 import io.github.dekabrsky.androidMidSemester.presentation.filters.FiltersViewModel
 import io.github.dekabrsky.androidMidSemester.presentation.matches.MatchesViewModel
 import org.koin.core.module.dsl.viewModel
@@ -17,6 +18,7 @@ import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.module
 
 val viewModelModule = module {
+    single { FiltersBadgeCache() }
     single { GetMatchesUseCase(get()) }
     single { GetMatchUseCase(get()) }
     single { GetRussianTeamsUseCase(get()) }

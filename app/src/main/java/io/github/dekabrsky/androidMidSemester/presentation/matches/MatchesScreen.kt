@@ -10,6 +10,8 @@ import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -43,11 +45,13 @@ fun MatchesScreen(
     viewModel: MatchesViewModel = koinViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val showFiltersBadge by viewModel.showFiltersBadge.collectAsStateWithLifecycle()
 
     Scaffold(
         topBar = {
             MatchesTopBar(
                 state = state,
+                showFiltersBadge = showFiltersBadge,
                 onPreviousDay = viewModel::previousDay,
                 onNextDay = viewModel::nextDay,
                 onFiltersClick = onFiltersClick,
@@ -87,6 +91,7 @@ fun MatchesScreen(
 @Composable
 private fun MatchesTopBar(
     state: MatchesUiState,
+    showFiltersBadge: Boolean,
     onPreviousDay: () -> Unit,
     onNextDay: () -> Unit,
     onFiltersClick: () -> Unit,
@@ -128,10 +133,14 @@ private fun MatchesTopBar(
             )
         }
         IconButton(onClick = onFiltersClick) {
-            Icon(
-                painter = painterResource(R.drawable.ic_filter),
-                contentDescription = "Фильтры",
-            )
+            BadgedBox(
+                badge = { if (showFiltersBadge) Badge() },
+            ) {
+                Icon(
+                    painter = painterResource(R.drawable.ic_filter),
+                    contentDescription = "Фильтры",
+                )
+            }
         }
     }
 }

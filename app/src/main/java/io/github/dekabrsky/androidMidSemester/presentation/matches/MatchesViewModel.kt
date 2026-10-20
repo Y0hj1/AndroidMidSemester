@@ -6,6 +6,7 @@ import io.github.dekabrsky.androidMidSemester.domain.model.Match
 import io.github.dekabrsky.androidMidSemester.domain.model.MatchFilters
 import io.github.dekabrsky.androidMidSemester.domain.usecase.GetMatchesUseCase
 import io.github.dekabrsky.androidMidSemester.domain.usecase.ObserveFiltersUseCase
+import io.github.dekabrsky.androidMidSemester.presentation.filters.FiltersBadgeCache
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -27,10 +28,13 @@ sealed interface MatchesUiState {
 class MatchesViewModel(
     private val getMatches: GetMatchesUseCase,
     observeFilters: ObserveFiltersUseCase,
+    private val badgeCache: FiltersBadgeCache,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow<MatchesUiState>(MatchesUiState.Loading)
     val state: StateFlow<MatchesUiState> = _state.asStateFlow()
+
+    val showFiltersBadge: StateFlow<Boolean> = badgeCache.showBadge
 
     private var currentDate = LocalDate.now()
     private var filters = MatchFilters()
@@ -41,6 +45,7 @@ class MatchesViewModel(
         viewModelScope.launch {
             observeFilters().collect { newFilters ->
                 filters = newFilters
+                badgeCache.update(newFilters)
                 load(currentDate)
             }
         }

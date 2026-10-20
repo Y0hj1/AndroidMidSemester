@@ -25,6 +25,7 @@ class FiltersViewModel(
     private val getRussianTeams: GetRussianTeamsUseCase,
     private val observeFilters: ObserveFiltersUseCase,
     private val saveFilters: SaveFiltersUseCase,
+    private val badgeCache: FiltersBadgeCache,
 ) : ViewModel() {
 
     private val _teams = MutableStateFlow<TeamsUiState>(TeamsUiState.Loading)
@@ -65,6 +66,7 @@ class FiltersViewModel(
     fun apply(onApplied: () -> Unit) {
         viewModelScope.launch {
             saveFilters(_draft.value)
+            badgeCache.update(_draft.value)
             onApplied()
         }
     }
