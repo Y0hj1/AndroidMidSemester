@@ -10,12 +10,13 @@ import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -39,18 +40,22 @@ private val TITLE_DATE_FORMAT =
 @Composable
 fun MatchesScreen(
     onMatchClick: (Match) -> Unit,
-    onTeamsClick: () -> Unit,
+    onFiltersClick: () -> Unit,
+    onFavoritesClick: () -> Unit,
     viewModel: MatchesViewModel = koinViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val showFiltersBadge by viewModel.showFiltersBadge.collectAsStateWithLifecycle()
 
     Scaffold(
         topBar = {
             MatchesTopBar(
                 state = state,
+                showFiltersBadge = showFiltersBadge,
                 onPreviousDay = viewModel::previousDay,
                 onNextDay = viewModel::nextDay,
-                onTeamsClick = onTeamsClick,
+                onFiltersClick = onFiltersClick,
+                onFavoritesClick = onFavoritesClick,
             )
         },
     ) { innerPadding ->
@@ -64,7 +69,7 @@ fun MatchesScreen(
                 is MatchesUiState.Error -> ErrorState(message = current.message)
                 is MatchesUiState.Content -> if (current.matches.isEmpty()) {
                     Text(
-                        text = "Матчей нет",
+                        text = if (current.filtered) "Нет матчей по выбранным фильтрам" else "Матчей нет",
                         style = MaterialTheme.typography.bodyLarge,
                         modifier = Modifier.align(Alignment.Center),
                     )
@@ -86,9 +91,11 @@ fun MatchesScreen(
 @Composable
 private fun MatchesTopBar(
     state: MatchesUiState,
+    showFiltersBadge: Boolean,
     onPreviousDay: () -> Unit,
     onNextDay: () -> Unit,
-    onTeamsClick: () -> Unit,
+    onFiltersClick: () -> Unit,
+    onFavoritesClick: () -> Unit,
 ) {
     val date = (state as? MatchesUiState.Content)?.date
 
@@ -119,8 +126,21 @@ private fun MatchesTopBar(
                 contentDescription = "Следующий день",
             )
         }
-        TextButton(onClick = onTeamsClick) {
-            Text("Команды")
+        IconButton(onClick = onFavoritesClick) {
+            Icon(
+                painter = painterResource(R.drawable.ic_star_border),
+                contentDescription = "Избранное",
+            )
+        }
+        IconButton(onClick = onFiltersClick) {
+            BadgedBox(
+                badge = { if (showFiltersBadge) Badge() },
+            ) {
+                Icon(
+                    painter = painterResource(R.drawable.ic_filter),
+                    contentDescription = "Фильтры",
+                )
+            }
         }
     }
 }

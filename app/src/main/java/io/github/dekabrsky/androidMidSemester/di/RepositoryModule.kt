@@ -2,8 +2,12 @@ package io.github.dekabrsky.androidMidSemester.di
 
 import io.github.dekabrsky.androidMidSemester.data.cache.MatchesCache
 import io.github.dekabrsky.androidMidSemester.data.cache.TeamsCache
+import io.github.dekabrsky.androidMidSemester.data.prefs.FiltersRepositoryImpl
+import io.github.dekabrsky.androidMidSemester.data.repository.FavoriteMatchRepositoryImpl
 import io.github.dekabrsky.androidMidSemester.data.repository.MatchRepositoryImpl
 import io.github.dekabrsky.androidMidSemester.data.repository.TeamRepositoryImpl
+import io.github.dekabrsky.androidMidSemester.domain.repository.FavoriteMatchRepository
+import io.github.dekabrsky.androidMidSemester.domain.repository.FiltersRepository
 import io.github.dekabrsky.androidMidSemester.domain.repository.MatchRepository
 import io.github.dekabrsky.androidMidSemester.domain.repository.TeamRepository
 import org.koin.dsl.module
@@ -13,4 +17,6 @@ val repositoryModule = module {
     single { TeamsCache(get(), get()) }
     single<MatchRepository> { MatchRepositoryImpl(get(), get()) }
     single<TeamRepository> { TeamRepositoryImpl(get(), get()) }
+    single<FiltersRepository> { FiltersRepositoryImpl(get()) }
+    single<FavoriteMatchRepository> { FavoriteMatchRepositoryImpl(get()) }
 }

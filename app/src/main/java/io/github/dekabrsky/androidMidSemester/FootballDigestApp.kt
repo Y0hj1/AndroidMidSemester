@@ -4,6 +4,7 @@ import android.app.Application
 import io.github.dekabrsky.androidMidSemester.di.databaseModule
 import io.github.dekabrsky.androidMidSemester.di.networkModule
 import io.github.dekabrsky.androidMidSemester.di.repositoryModule
+import io.github.dekabrsky.androidMidSemester.di.storageModule
 import io.github.dekabrsky.androidMidSemester.di.viewModelModule
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.startKoin
@@ -14,7 +15,7 @@ class FootballDigestApp : Application() {
         super.onCreate()
         startKoin {
             androidContext(this@FootballDigestApp)
-            modules(networkModule, databaseModule, repositoryModule, viewModelModule)
+            modules(networkModule, databaseModule, storageModule, repositoryModule, viewModelModule)
         }
     }
 }

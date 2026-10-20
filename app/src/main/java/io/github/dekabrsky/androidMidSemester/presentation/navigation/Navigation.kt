@@ -11,8 +11,9 @@ import androidx.navigation3.scene.DialogSceneStrategy
 import androidx.navigation3.ui.NavDisplay
 import io.github.dekabrsky.androidMidSemester.domain.model.Match
 import io.github.dekabrsky.androidMidSemester.presentation.details.MatchDetailsDialog
+import io.github.dekabrsky.androidMidSemester.presentation.favorites.FavoritesScreen
+import io.github.dekabrsky.androidMidSemester.presentation.filters.FiltersScreen
 import io.github.dekabrsky.androidMidSemester.presentation.matches.MatchesScreen
-import io.github.dekabrsky.androidMidSemester.presentation.teams.TeamsScreen
 
 /** Маркер-интерфейс для всех узлов навигации приложения. */
 interface Route
@@ -20,8 +21,11 @@ interface Route
 /** Список матчей — стартовый узел. */
 data object MatchesList : Route
 
-/** Выбор команд России для фильтрации списка матчей. */
-data object TeamsList : Route
+/** Фильтры списка матчей (команды, статус) — сохраняются между запусками. */
+data object Filters : Route
+
+/** Избранные матчи — читаются из Room, доступны без сети. */
+data object FavoritesList : Route
 
 /** Детали матча — показывается в диалоговом окне (DialogSceneStrategy). */
 data class MatchDetails(val match: Match) : Route
@@ -54,11 +58,21 @@ fun MatchesNavRoot(navigator: Navigator = remember { Navigator(MatchesList) }) {
             entry<MatchesList> {
                 MatchesScreen(
                     onMatchClick = { match -> navigator.goTo(MatchDetails(match)) },
-                    onTeamsClick = { navigator.goTo(TeamsList) },
+                    onFiltersClick = { navigator.goTo(Filters) },
+                    onFavoritesClick = { navigator.goTo(FavoritesList) },
                 )
             }
-            entry<TeamsList> {
-                TeamsScreen(onBack = navigator::goBack)
+            entry<Filters> {
+                FiltersScreen(
+                    onBack = navigator::goBack,
+                    onDone = navigator::goBack,
+                )
+            }
+            entry<FavoritesList> {
+                FavoritesScreen(
+                    onBack = navigator::goBack,
+                    onMatchClick = { match -> navigator.goTo(MatchDetails(match)) },
+                )
             }
             entry<MatchDetails>(
                 metadata = DialogSceneStrategy.dialog()
