@@ -3,8 +3,9 @@ package io.github.dekabrsky.androidMidSemester.presentation.matches
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import io.github.dekabrsky.androidMidSemester.domain.model.Match
+import io.github.dekabrsky.androidMidSemester.domain.model.MatchFilters
 import io.github.dekabrsky.androidMidSemester.domain.usecase.GetMatchesUseCase
-import io.github.dekabrsky.androidMidSemester.domain.usecase.ObserveSelectedTeamsUseCase
+import io.github.dekabrsky.androidMidSemester.domain.usecase.ObserveFiltersUseCase
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -15,28 +16,32 @@ import java.time.LocalDate
 
 sealed interface MatchesUiState {
     data object Loading : MatchesUiState
-    data class Content(val date: LocalDate, val matches: List<Match>) : MatchesUiState
+    data class Content(
+        val date: LocalDate,
+        val matches: List<Match>,
+        val filtered: Boolean,
+    ) : MatchesUiState
     data class Error(val message: String) : MatchesUiState
 }
 
 class MatchesViewModel(
     private val getMatches: GetMatchesUseCase,
-    observeSelectedTeams: ObserveSelectedTeamsUseCase,
+    observeFilters: ObserveFiltersUseCase,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow<MatchesUiState>(MatchesUiState.Loading)
     val state: StateFlow<MatchesUiState> = _state.asStateFlow()
 
-    private val selectedTeamIds = observeSelectedTeams()
     private var currentDate = LocalDate.now()
-    private var dayMatches: List<Match> = emptyList()
+    private var filters = MatchFilters()
     private var loadJob: Job? = null
 
     init {
-        load(currentDate)
+        // первая эмиссия — сохранённые фильтры, дальше — каждое «Готово» на экране фильтров
         viewModelScope.launch {
-            selectedTeamIds.collect {
-                if (_state.value is MatchesUiState.Content) showMatches()
+            observeFilters().collect { newFilters ->
+                filters = newFilters
+                load(currentDate)
             }
         }
     }
@@ -56,8 +61,11 @@ class MatchesViewModel(
         loadJob = viewModelScope.launch {
             runCatching { getMatches(date) }
                 .onSuccess { matches ->
-                    dayMatches = matches
-                    showMatches()
+                    _state.value = MatchesUiState.Content(
+                        date = date,
+                        matches = matches.filter(filters::accepts),
+                        filtered = !filters.isDefault,
+                    )
                 }
                 .onFailure { e ->
                     if (e is CancellationException) throw e
@@ -66,15 +74,5 @@ class MatchesViewModel(
                     )
                 }
         }
-    }
-
-    private fun showMatches() {
-        val ids = selectedTeamIds.value
-        val matches = if (ids.isEmpty()) {
-            dayMatches
-        } else {
-            dayMatches.filter { it.home.id in ids || it.away.id in ids }
-        }
-        _state.value = MatchesUiState.Content(currentDate, matches)
     }
 }

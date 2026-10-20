@@ -15,7 +15,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -39,7 +38,7 @@ private val TITLE_DATE_FORMAT =
 @Composable
 fun MatchesScreen(
     onMatchClick: (Match) -> Unit,
-    onTeamsClick: () -> Unit,
+    onFiltersClick: () -> Unit,
     viewModel: MatchesViewModel = koinViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -50,7 +49,7 @@ fun MatchesScreen(
                 state = state,
                 onPreviousDay = viewModel::previousDay,
                 onNextDay = viewModel::nextDay,
-                onTeamsClick = onTeamsClick,
+                onFiltersClick = onFiltersClick,
             )
         },
     ) { innerPadding ->
@@ -64,7 +63,7 @@ fun MatchesScreen(
                 is MatchesUiState.Error -> ErrorState(message = current.message)
                 is MatchesUiState.Content -> if (current.matches.isEmpty()) {
                     Text(
-                        text = "Матчей нет",
+                        text = if (current.filtered) "Нет матчей по выбранным фильтрам" else "Матчей нет",
                         style = MaterialTheme.typography.bodyLarge,
                         modifier = Modifier.align(Alignment.Center),
                     )
@@ -88,7 +87,7 @@ private fun MatchesTopBar(
     state: MatchesUiState,
     onPreviousDay: () -> Unit,
     onNextDay: () -> Unit,
-    onTeamsClick: () -> Unit,
+    onFiltersClick: () -> Unit,
 ) {
     val date = (state as? MatchesUiState.Content)?.date
 
@@ -119,8 +118,11 @@ private fun MatchesTopBar(
                 contentDescription = "Следующий день",
             )
         }
-        TextButton(onClick = onTeamsClick) {
-            Text("Команды")
+        IconButton(onClick = onFiltersClick) {
+            Icon(
+                painter = painterResource(R.drawable.ic_filter),
+                contentDescription = "Фильтры",
+            )
         }
     }
 }
