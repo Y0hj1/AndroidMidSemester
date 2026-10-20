@@ -8,20 +8,26 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Card
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import io.github.dekabrsky.androidMidSemester.R
 import io.github.dekabrsky.androidMidSemester.domain.model.Match
 import io.github.dekabrsky.androidMidSemester.domain.model.Team
+import org.koin.androidx.compose.koinViewModel
+import org.koin.core.parameter.parametersOf
 import java.time.format.DateTimeFormatter
 
 private val KICKOFF_FORMAT = DateTimeFormatter.ofPattern("HH:mm")
@@ -30,7 +36,10 @@ private val KICKOFF_FORMAT = DateTimeFormatter.ofPattern("HH:mm")
 fun MatchDetailsDialog(
     match: Match,
     onDismiss: () -> Unit,
+    viewModel: MatchDetailsViewModel = koinViewModel(parameters = { parametersOf(match) }),
 ) {
+    val isFavorite by viewModel.isFavorite.collectAsStateWithLifecycle()
+
     Card(modifier = Modifier.fillMaxWidth()) {
         Column(
             modifier = Modifier.padding(20.dp),
@@ -55,13 +64,25 @@ fun MatchDetailsDialog(
             DetailRow(label = "Лига", value = match.league)
             DetailRow(label = "Тур", value = match.round)
 
-            TextButton(
-                onClick = onDismiss,
+            Row(
                 modifier = Modifier
-                    .align(Alignment.End)
+                    .fillMaxWidth()
                     .padding(top = 8.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
             ) {
-                Text("Закрыть")
+                IconButton(onClick = viewModel::toggleFavorite) {
+                    Icon(
+                        painter = painterResource(
+                            if (isFavorite) R.drawable.ic_star else R.drawable.ic_star_border
+                        ),
+                        contentDescription = if (isFavorite) "Убрать из избранного" else "В избранное",
+                        tint = MaterialTheme.colorScheme.primary,
+                    )
+                }
+                TextButton(onClick = onDismiss) {
+                    Text("Закрыть")
+                }
             }
         }
     }

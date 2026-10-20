@@ -39,6 +39,7 @@ private val TITLE_DATE_FORMAT =
 fun MatchesScreen(
     onMatchClick: (Match) -> Unit,
     onFiltersClick: () -> Unit,
+    onFavoritesClick: () -> Unit,
     viewModel: MatchesViewModel = koinViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -50,6 +51,7 @@ fun MatchesScreen(
                 onPreviousDay = viewModel::previousDay,
                 onNextDay = viewModel::nextDay,
                 onFiltersClick = onFiltersClick,
+                onFavoritesClick = onFavoritesClick,
             )
         },
     ) { innerPadding ->
@@ -88,6 +90,7 @@ private fun MatchesTopBar(
     onPreviousDay: () -> Unit,
     onNextDay: () -> Unit,
     onFiltersClick: () -> Unit,
+    onFavoritesClick: () -> Unit,
 ) {
     val date = (state as? MatchesUiState.Content)?.date
 
@@ -116,6 +119,12 @@ private fun MatchesTopBar(
             Icon(
                 painter = painterResource(R.drawable.ic_arrow_right),
                 contentDescription = "Следующий день",
+            )
+        }
+        IconButton(onClick = onFavoritesClick) {
+            Icon(
+                painter = painterResource(R.drawable.ic_star_border),
+                contentDescription = "Избранное",
             )
         }
         IconButton(onClick = onFiltersClick) {
